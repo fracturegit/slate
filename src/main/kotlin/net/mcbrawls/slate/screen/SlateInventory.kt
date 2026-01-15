@@ -52,8 +52,7 @@ open class SlateInventory<T : Slate>(
     private fun mapSlot(slot: Int): Int {
         if (slot == -999) return slot
 
-        val tiles = slate.tiles
-        val lastContainerSlot = tiles.baseSize - 1
+        val lastContainerSlot = slate.tiles.baseSize - 1
 
         if (slot <= lastContainerSlot) {
             return slot
@@ -67,7 +66,8 @@ open class SlateInventory<T : Slate>(
     }
 
     override fun update(player: Player) {
-        slate.tiles.forEach { index, tile ->
+        for (index in 0 until slate.tiles.getFullSize()) {
+            val tile = slate[index]
             val stack = tile?.createDisplayedStack(slate, player)
             sendSlot(player, index, stack ?: ItemStack.AIR)
         }

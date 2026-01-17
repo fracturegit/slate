@@ -5,6 +5,7 @@ package net.mcbrawls.slate.tile
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import net.mcbrawls.slate.Slate
+import net.mcbrawls.slate.Slate.Companion.slate
 import net.minestom.server.entity.Player
 import net.minestom.server.item.ItemStack
 import org.apache.commons.lang3.mutable.MutableLong
@@ -50,6 +51,10 @@ class SuspendedTile(
                     if (timestamp == latestCallTimestamp.value) {
                         tile = newTile
                         factoryState = FactoryState.FINISHED
+
+                        if (player.slate == slate) {
+                            player.openInventory?.update(player)
+                        }
                     }
                 }
             }

@@ -34,7 +34,9 @@ class SuspendedTile(
         }
 
     private var latestCallTimestamp = MutableLong(0L)
-    private var factoryState: FactoryState = FactoryState.EMPTY
+
+    var factoryState: FactoryState = FactoryState.EMPTY
+        private set
 
     fun updateTile(slate: Slate, player: Player): Tile {
         if (factoryState == FactoryState.EMPTY) {

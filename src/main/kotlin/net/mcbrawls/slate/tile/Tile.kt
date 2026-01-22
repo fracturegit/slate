@@ -1,7 +1,8 @@
 package net.mcbrawls.slate.tile
 
+import com.noxcrew.noxesium.api.NoxesiumReferences
+import com.noxcrew.noxesium.core.registry.CommonItemComponentTypes
 import it.unimi.dsi.fastutil.objects.ReferenceLinkedOpenHashSet
-import net.kyori.adventure.key.Key
 import net.kyori.adventure.nbt.CompoundBinaryTag
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
@@ -161,10 +162,15 @@ open class Tile {
         if (immovable) {
             val nbt = CompoundBinaryTag.builder()
 
-            val bukkitNbt = CompoundBinaryTag.builder()
-            bukkitNbt.putBoolean(IMMOVABLE_TAG, true)
+            val immovableId = CommonItemComponentTypes.IMMOVABLE.id.toString()
 
-            nbt.put(BUKKIT_COMPOUND_ID, bukkitNbt.build())
+            val noxComponentTag = CompoundBinaryTag.builder()
+            noxComponentTag.put(immovableId, CompoundBinaryTag.empty())
+            nbt.put(NoxesiumReferences.COMPONENT_NAMESPACE, noxComponentTag.build())
+
+            val bukkitNoxComponentTag = CompoundBinaryTag.builder()
+            bukkitNoxComponentTag.putBoolean(immovableId, true)
+            nbt.put(BUKKIT_COMPOUND_ID, bukkitNoxComponentTag.build())
 
             stack.set(DataComponents.CUSTOM_DATA, CustomData(nbt.build()))
         }
@@ -205,9 +211,6 @@ open class Tile {
 
     companion object {
         const val BUKKIT_COMPOUND_ID = "PublicBukkitValues"
-        const val NOXESIUM_NAMESPACE = "noxesium"
-
-        val IMMOVABLE_TAG: String = Key.key(NOXESIUM_NAMESPACE, "immovable").toString()
 
         val DEFAULT_STYLE = Style.style()
             .color(NamedTextColor.WHITE)

@@ -1,6 +1,7 @@
 package net.mcbrawls.slate.screen
 
 import net.kyori.adventure.text.Component
+import net.mcbrawls.slate.InventorySlate
 import net.mcbrawls.slate.Slate
 import net.mcbrawls.slate.screen.slot.ClickModifier
 import net.mcbrawls.slate.screen.slot.SlateClickType
@@ -12,6 +13,7 @@ import net.minestom.server.inventory.Inventory
 import net.minestom.server.inventory.InventoryType
 import net.minestom.server.inventory.click.Click
 import net.minestom.server.item.ItemStack
+import net.minestom.server.network.packet.server.play.SetPlayerInventorySlotPacket
 import net.minestom.server.network.packet.server.play.SetSlotPacket
 
 open class SlateInventory<T : Slate>(
@@ -30,6 +32,13 @@ open class SlateInventory<T : Slate>(
 
     override fun addViewer(player: Player): Boolean {
         slate.onOpen(player, this)
+
+        if (slate is InventorySlate) {
+            if (!viewers.add(player)) return false
+            update(player)
+            return true
+        }
+
         return super.addViewer(player)
     }
 
@@ -46,10 +55,15 @@ open class SlateInventory<T : Slate>(
         val tile = slate[mappedSlot]
         val context = TileClickContext(tile, click, clickType, modifiers, player, rawSlot != -999)
         slate.onSlotClicked(context)
+
+        if (slate is InventorySlate) {
+            sendSlot(player, rawSlot, tile?.createDisplayedStack(slate, player) ?: ItemStack.AIR)
+        }
+
         return false
     }
 
-    private fun mapSlot(slot: Int): Int {
+    fun mapSlot(slot: Int): Int {
         if (slot == -999) return slot
 
         val lastContainerSlot = slate.tiles.baseSize - 1
@@ -74,6 +88,11 @@ open class SlateInventory<T : Slate>(
     }
 
     private fun sendSlot(player: Player, index: Int, stack: ItemStack) {
+        if (slate is InventorySlate) {
+            player.sendPacket(SetPlayerInventorySlotPacket(index, stack))
+            return
+        }
+
         player.sendPacket(SetSlotPacket(windowId.toInt(), 0, index.toShort(), stack))
     }
 }

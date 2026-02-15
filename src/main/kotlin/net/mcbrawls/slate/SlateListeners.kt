@@ -1,89 +1,80 @@
 package net.mcbrawls.slate
 
+import net.mcbrawls.slate.Slate.Companion.slate
 import net.mcbrawls.slate.screen.SlateInventory
 import net.mcbrawls.slate.screen.slot.ClickModifier
 import net.mcbrawls.slate.screen.slot.SlateClickType
 import net.mcbrawls.slate.screen.slot.TileClickContext
 import net.minestom.server.MinecraftServer
+import net.minestom.server.entity.GameMode
 import net.minestom.server.entity.Player
 import net.minestom.server.entity.PlayerHand
+import net.minestom.server.event.player.AsyncPlayerConfigurationEvent
 import net.minestom.server.event.player.PlayerAnvilInputEvent
 import net.minestom.server.event.player.PlayerHandAnimationEvent
+import net.minestom.server.event.player.PlayerPacketEvent
+import net.minestom.server.event.player.PlayerSpawnEvent
 import net.minestom.server.event.player.PlayerTickEvent
 import net.minestom.server.event.player.PlayerUseItemEvent
+import net.minestom.server.instance.block.Block
 import net.minestom.server.inventory.click.Click
+import net.minestom.server.item.ItemStack
+import net.minestom.server.network.packet.client.play.ClientClickWindowPacket
+import net.minestom.server.network.packet.client.play.ClientCloseWindowPacket
+import net.minestom.server.network.packet.client.play.ClientPlayerActionPacket
+import net.minestom.server.network.packet.server.play.SetCursorItemPacket
+import net.minestom.server.utils.inventory.PlayerInventoryUtils
 
 object SlateListeners {
     fun initialize() {
-        val events = MinecraftServer.getGlobalEventHandler()
+        MinecraftServer.getGlobalEventHandler().let { events ->
 
-        events.addListener(PlayerUseItemEvent::class.java) { event ->
-            if (!onUse(event.player, event.hand)) {
-                // event.isCancelled = true
+            events.addListener(PlayerHandAnimationEvent::class.java) { event ->
+                val player = event.player
+                player.openInventory?.handleClick(player, Click.Left(player.heldSlot.toInt()))
+            }
+
+            events.addListener(PlayerUseItemEvent::class.java) { event ->
+                val player = event.player
+                if (player.slate is InventorySlate) {
+                    val slot = if (event.hand == PlayerHand.OFF) PlayerInventoryUtils.OFFHAND_SLOT else player.heldSlot.toInt()
+                    player.openInventory?.handleClick(player, Click.Right(slot))
+                }
+            }
+
+            events.addListener(PlayerPacketEvent::class.java) { event ->
+                val packet = event.packet
+                val player = event.player
+                if (player.slate is InventorySlate) {
+                    when (packet) {
+                        is ClientCloseWindowPacket -> {
+                            event.isCancelled = true
+                        }
+
+                        is ClientClickWindowPacket -> {
+                            val inventory = player.openInventory
+                            if (inventory is SlateInventory<*>) {
+                                player.sendPacket(SetCursorItemPacket(ItemStack.AIR))
+                                inventory.update()
+
+                                player.clickPreprocessor.processClick(packet, inventory.size)?.let { click ->
+                                    inventory.handleClick(player, click)
+                                }
+                            }
+
+                            event.isCancelled = true
+                        }
+
+                        is ClientPlayerActionPacket -> {
+                            val status = packet.status
+                            if (status == ClientPlayerActionPacket.Status.DROP_ITEM || status == ClientPlayerActionPacket.Status.DROP_ITEM_STACK) {
+                                player.openInventory?.update()
+                                event.isCancelled = true
+                            }
+                        }
+                    }
+                }
             }
         }
-
-        events.addListener(PlayerHandAnimationEvent::class.java) { event ->
-            if (!onSwing(event.player, event.hand)) {
-                event.isCancelled = true
-            }
-        }
-
-        events.addListener(PlayerTickEvent::class.java) { event ->
-            val player = event.player
-            val inventory = player.openInventory
-            if (inventory is SlateInventory<*>) {
-                inventory.tick(player)
-
-                /*if (player.aliveTicks % 20 == 0L) {
-                    println(inventory.slate.hashCode())
-                }*/
-            }
-        }
-
-        events.addListener(PlayerAnvilInputEvent::class.java) { event ->
-            val player = event.player
-            val inventory = event.inventory
-            if (inventory is SlateInventory<*>) {
-                inventory.onAnvilInput(player, event.input)
-            }
-        }
-    }
-
-    fun getClickModifiers(player: Player): Collection<ClickModifier> {
-        return buildSet {
-            if (player.isSneaking) {
-                add(ClickModifier.SHIFT)
-            }
-        }
-    }
-
-    private fun interact(player: Player, hand: PlayerHand, clickFactory: (Int) -> Click): Boolean {
-        if (hand != PlayerHand.MAIN) {
-            return true
-        }
-
-        val slateInventory = player.openInventory
-        if (slateInventory is SlateInventory<*>) {
-            val slate = slateInventory.slate
-            val click = clickFactory.invoke(player.heldSlot.toInt())
-            val tile = slate.tiles[click.slot()]
-            val context = TileClickContext(tile, click, SlateClickType.parse(click), getClickModifiers(player), player, true)
-            slate.onSlotClicked(context)
-
-            slateInventory.update(player)
-
-            return false
-        }
-
-        return true
-    }
-
-    internal fun onUse(player: Player, hand: PlayerHand): Boolean {
-        return interact(player, hand, Click::Right)
-    }
-
-    internal fun onSwing(player: Player, hand: PlayerHand): Boolean {
-        return interact(player, hand, Click::Left)
     }
 }

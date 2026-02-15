@@ -1,1 +1,1 @@
-rootProject.name = "slate"
+rootProject.name = "minestom-slate"

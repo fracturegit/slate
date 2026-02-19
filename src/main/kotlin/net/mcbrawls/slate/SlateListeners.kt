@@ -28,7 +28,6 @@ import net.minestom.server.utils.inventory.PlayerInventoryUtils
 object SlateListeners {
     fun initialize() {
         MinecraftServer.getGlobalEventHandler().let { events ->
-
             events.addListener(PlayerHandAnimationEvent::class.java) { event ->
                 val player = event.player
                 player.openInventory?.handleClick(player, Click.Left(player.heldSlot.toInt()))

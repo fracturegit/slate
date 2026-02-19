@@ -70,6 +70,16 @@ object Main {
                                     callbacks {
                                         onGenericClick { slate, tile, context ->
                                             println("Click! ${context.click.slot()} ${context.clickType} ${tile.createBaseStack(slate, context.player).material()}")
+
+                                            subslate {
+                                                tiles[3] = tile(Material.STONE)
+
+                                                callbacks {
+                                                    onClose { _, player ->
+                                                        openParent(player)
+                                                    }
+                                                }
+                                            }.open(context.player)
                                         }
                                     }
                                 }

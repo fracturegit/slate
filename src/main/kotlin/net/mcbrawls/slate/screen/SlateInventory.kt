@@ -11,10 +11,13 @@ import net.mcbrawls.slate.tile.HandledTileGrid.Companion.INVENTORY_SIZE
 import net.minestom.server.entity.Player
 import net.minestom.server.inventory.Inventory
 import net.minestom.server.inventory.InventoryType
+import net.minestom.server.inventory.PlayerInventory
 import net.minestom.server.inventory.click.Click
 import net.minestom.server.item.ItemStack
 import net.minestom.server.network.packet.server.play.SetPlayerInventorySlotPacket
 import net.minestom.server.network.packet.server.play.SetSlotPacket
+import net.minestom.server.network.packet.server.play.WindowItemsPacket
+import net.minestom.server.utils.inventory.PlayerInventoryUtils
 
 open class SlateInventory<T : Slate>(
     val slate: T,
@@ -55,11 +58,6 @@ open class SlateInventory<T : Slate>(
         val tile = slate[mappedSlot]
         val context = TileClickContext(tile, click, clickType, modifiers, player, rawSlot != -999)
         slate.onSlotClicked(context)
-
-        if (slate is InventorySlate) {
-            sendSlot(player, rawSlot, tile?.createDisplayedStack(slate, player) ?: ItemStack.AIR)
-        }
-
         return false
     }
 

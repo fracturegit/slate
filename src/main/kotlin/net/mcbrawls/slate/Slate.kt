@@ -136,12 +136,12 @@ open class Slate {
         width: Int,
         height: Int,
         maxCount: Int,
-        crossinline slotFactory: (PagedSlateLayer, Int) -> Tile?,
+        slotFactory: PagedSlateLayer.SlotFactory,
         builder: SlateLayer.() -> Unit = {},
     ) : PagedSlateLayer {
         val layer = object : PagedSlateLayer(maxCount, width, height) {
-            override fun createTile(index: Int): Tile? {
-                return slotFactory.invoke(this, index)
+            override fun createTile(index: Int, oldTiles: Array<Tile?>): Tile? {
+                return slotFactory.createSlot(this, index, oldTiles)
             }
         }.apply(builder)
 

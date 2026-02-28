@@ -52,13 +52,19 @@ abstract class PagedSlateLayer(
         /**
          * The calculated index from all tiles of all pages.
          */
-        index: Int
+        index: Int,
+
+        /**
+         * The old tiles, before an update began.
+         */
+        oldTiles: Array<Tile?>,
     ): Tile?
 
     /**
      * Updates the tile grid to new tiles for the active page.
      */
     fun updateTileGrid() {
+        val oldTiles = tiles.tiles.copyOf()
         tiles.clear()
 
         if (slotCount < 0) {
@@ -69,7 +75,7 @@ abstract class PagedSlateLayer(
         val baseIndex = currentPage * size
         (0 until size).forEach { index ->
             val calculatedIndex = baseIndex + index
-            val tile = createTile(calculatedIndex)
+            val tile = createTile(calculatedIndex, oldTiles)
             tiles[index] = tile
         }
     }
@@ -115,5 +121,9 @@ abstract class PagedSlateLayer(
 
             return page
         }
+    }
+
+    fun interface SlotFactory {
+        fun createSlot(layer: PagedSlateLayer, index: Int, oldTiles: Array<Tile?>): Tile?
     }
 }

@@ -46,6 +46,7 @@ open class SlateCallbackHandler {
     /**
      * Adds a callback invoked when the slate input changes, namely for anvil screen handler types.
      */
+    @Deprecated("Not yet implemented")
     fun onInput(callback: SlateInputCallback) {
         inputCallbacks.add(callback)
     }

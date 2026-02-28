@@ -2,21 +2,12 @@ package net.mcbrawls.slate
 
 import net.mcbrawls.slate.Slate.Companion.slate
 import net.mcbrawls.slate.screen.SlateInventory
-import net.mcbrawls.slate.screen.slot.ClickModifier
-import net.mcbrawls.slate.screen.slot.SlateClickType
-import net.mcbrawls.slate.screen.slot.TileClickContext
 import net.minestom.server.MinecraftServer
-import net.minestom.server.entity.GameMode
-import net.minestom.server.entity.Player
 import net.minestom.server.entity.PlayerHand
-import net.minestom.server.event.player.AsyncPlayerConfigurationEvent
-import net.minestom.server.event.player.PlayerAnvilInputEvent
 import net.minestom.server.event.player.PlayerHandAnimationEvent
 import net.minestom.server.event.player.PlayerPacketEvent
-import net.minestom.server.event.player.PlayerSpawnEvent
 import net.minestom.server.event.player.PlayerTickEvent
 import net.minestom.server.event.player.PlayerUseItemEvent
-import net.minestom.server.instance.block.Block
 import net.minestom.server.inventory.click.Click
 import net.minestom.server.item.ItemStack
 import net.minestom.server.network.packet.client.play.ClientClickWindowPacket
@@ -73,6 +64,12 @@ object SlateListeners {
                         }
                     }
                 }
+            }
+
+            events.addListener(PlayerTickEvent::class.java) { event ->
+                val player = event.player
+                val openInventory = player.openInventory
+                if (openInventory is SlateInventory<*>) openInventory.tick(player)
             }
         }
     }

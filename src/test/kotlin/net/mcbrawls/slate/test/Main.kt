@@ -4,7 +4,6 @@ import net.kyori.adventure.text.Component
 import net.mcbrawls.slate.InventorySlate
 import net.mcbrawls.slate.Slate.Companion.slate
 import net.mcbrawls.slate.SlateListeners
-import net.mcbrawls.slate.screen.SlateInventory
 import net.mcbrawls.slate.tile.Tile.Companion.tile
 import net.minestom.server.Auth
 import net.minestom.server.MinecraftServer
@@ -12,22 +11,11 @@ import net.minestom.server.command.builder.Command
 import net.minestom.server.command.builder.CommandExecutor
 import net.minestom.server.entity.GameMode
 import net.minestom.server.entity.Player
-import net.minestom.server.entity.PlayerHand
 import net.minestom.server.event.player.AsyncPlayerConfigurationEvent
-import net.minestom.server.event.player.PlayerHandAnimationEvent
-import net.minestom.server.event.player.PlayerPacketEvent
 import net.minestom.server.event.player.PlayerSpawnEvent
-import net.minestom.server.event.player.PlayerUseItemEvent
 import net.minestom.server.instance.LightingChunk
 import net.minestom.server.instance.block.Block
-import net.minestom.server.inventory.click.Click
-import net.minestom.server.item.ItemStack
 import net.minestom.server.item.Material
-import net.minestom.server.network.packet.client.play.ClientClickWindowPacket
-import net.minestom.server.network.packet.client.play.ClientCloseWindowPacket
-import net.minestom.server.network.packet.client.play.ClientPlayerActionPacket
-import net.minestom.server.network.packet.server.play.SetCursorItemPacket
-import net.minestom.server.utils.inventory.PlayerInventoryUtils
 
 object Main {
     @JvmStatic
@@ -72,7 +60,18 @@ object Main {
                                             println("Click! ${context.click.slot()} ${context.clickType} ${tile.createBaseStack(slate, context.player).material()}")
 
                                             subslate {
-                                                tiles[3] = tile(Material.STONE)
+                                                tiles {
+                                                    addLayer(indexAt(3, 3), 4, 4) {
+                                                        tiles {
+                                                            tiles.fill(tile(Material.DIORITE))
+                                                        }
+                                                    }
+                                                }
+
+                                                tiles.tiles.indices.forEach { i ->
+                                                    if (i % 2 == 0) return@forEach
+                                                    tiles.tiles[i] = tile(Material.STONE)
+                                                }
 
                                                 callbacks {
                                                     onClose { _, player ->

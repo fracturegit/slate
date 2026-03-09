@@ -51,7 +51,7 @@ open class TileGrid(val width: Int, val height: Int) {
      * @return the calculated index
      */
     operator fun set(x: Int, y: Int, tile: Tile?): Int {
-        val index = toIndex(x, y, width)
+        val index = indexAt(x, y)
         set(index, tile)
         return index
     }
@@ -83,8 +83,7 @@ open class TileGrid(val width: Int, val height: Int) {
      * Gets a slot tile from the given coordinates.
      */
     operator fun get(x: Int, y: Int): Tile? {
-        val index = toIndex(x, y, width)
-        return this[index]
+        return this[indexAt(x, y)]
     }
 
     /**
@@ -125,6 +124,10 @@ open class TileGrid(val width: Int, val height: Int) {
      */
     private fun checkSlotIndex(index: Int): Boolean {
         return index <= lastIndex
+    }
+
+    fun indexAt(x: Int, y: Int): Int {
+        return toIndex(x, y, width)
     }
 
     companion object {

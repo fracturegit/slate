@@ -306,6 +306,17 @@ open class Slate {
     }
 
     /**
+     * Returns to the previous slate, or closes the slate.
+     */
+    fun back(player: Player): Boolean {
+        return if (parent != null) {
+            openParent(player)
+        } else {
+            close(player)
+        }
+    }
+
+    /**
      * Opens the parent of this slate, if present.
      */
     fun openParent(player: Player): Boolean {

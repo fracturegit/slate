@@ -4,8 +4,6 @@ import net.kyori.adventure.text.Component
 import net.mcbrawls.slate.InventorySlate
 import net.mcbrawls.slate.MinestomSlatePlatform
 import net.mcbrawls.slate.Slate.Companion.slate
-import net.mcbrawls.slate.SlateCore
-import net.mcbrawls.slate.SlateListeners
 import net.mcbrawls.slate.onClose
 import net.mcbrawls.slate.onOpen
 import net.mcbrawls.slate.open
@@ -50,8 +48,7 @@ object Main {
             }
         }
 
-        SlateCore.platform = MinestomSlatePlatform
-        SlateListeners.initialize()
+        MinestomSlatePlatform.initialize()
 
         val commandManager = MinecraftServer.getCommandManager()
         commandManager.register(object : Command("test") {

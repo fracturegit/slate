@@ -28,6 +28,13 @@ object MinestomSlatePlatform : SlatePlatform {
 
     private const val BUKKIT_COMPOUND_ID = "PublicBukkitValues"
 
+    fun initialize() {
+        if (SlateCore.platform != MinestomSlatePlatform) {
+            SlateCore.platform = MinestomSlatePlatform
+            SlateListeners.initialize()
+        }
+    }
+
     override fun wrapPlayer(native: Any): SlatePlayer = MinestomSlatePlayer(native as Player)
 
     override fun openForPlayer(slate: Slate, player: SlatePlayer): Boolean {
